@@ -16,31 +16,21 @@ inject_hook() {
 # FAAAAH_HOOK
 function __faah_hook() {
     if [[ -f "$HOME/.faah/enabled" && $? -ne 0 ]]; then
-        afplay "$HOME/.faah/faah.mp3"
+INSTALL_DIR="$HOME/.faah"
+CONFIG_FILE="$INSTALL_DIR/enabled"
+SOUND_FILE="$INSTALL_DIR/faah.mp3"
+
+get_sound_source() {
+    BREW_PREFIX=$(brew --prefix faah 2>/dev/null)
+    if [[ -n "$BREW_PREFIX" ]]; then
+        echo "$BREW_PREFIX/sounds/faah.mp3"
+    else
+        echo "$(dirname "$0")/sounds/faah.mp3"
     fi
 }
-autoload -Uz add-zsh-hook
-add-zsh-hook precmd __faah_hook
-EOF
-    fi
-}
 
-enable() {
-    install_files
-    inject_hook
-    touch "$CONFIG_FILE"
-    echo "FAAAH enabled 😈"
+install_files() {
+    mkdir -p "$INSTALL_DIR"
+    SOUND_SOURCE=$(get_sound_source)
+    cp "$SOUND_SOURCE" "$SOUND_FILE"
 }
-
-disable() {
-    rm -f "$CONFIG_FILE"
-    echo "FAAAH disabled 😌"
-}
-
-case "$1" in
-    on) enable ;;
-    off) disable ;;
-    *)
-        echo "Usage: faah on | faah off"
-        ;;
-esac
